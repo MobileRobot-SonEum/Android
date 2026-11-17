@@ -1,0 +1,10 @@
+# local.properties에 아래 항목을 추가하세요 (local.properties는 git에 올라가지 않음).
+# 값은 팀에서 따로 전달받습니다. 키를 이 파일이나 코드에 적어 커밋하지 마세요.
+# 바꾼 뒤에는 다시 빌드해야 앱에 반영됩니다 (BuildConfig로 주입).
+
+# 에이전트 서버 주소 (https만, 끝에 / 없이)
+agent.baseUrl=
+# temi 역할 API 키 (X-API-Key 헤더)
+agent.apiKey=
+# temi 장치 ID (영문·숫자·.·_·- 1~64자). /agent/child의 device_id, /ws/temi의 X-Device-Id
+temi.deviceId=

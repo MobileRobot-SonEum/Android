@@ -36,6 +36,12 @@
             android:name=".game.HideAndSeekActivity"
             android:screenOrientation="landscape"
             android:exported="false" />
+        <!-- 에이전트 서버 연결 테스트 (health, 아이 모드 대화, 명령 채널 상태) -->
+        <activity
+            android:name=".server.ConnectionTestActivity"
+            android:screenOrientation="landscape"
+            android:windowSoftInputMode="adjustResize|stateHidden"
+            android:exported="false" />
         <!-- SDK Settings 권한 선언 -->
         <meta-data android:name="com.robotemi.sdk.metadata.PERMISSIONS"
             android:value="com.robotemi.permission.settings" />

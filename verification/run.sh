@@ -9,5 +9,8 @@ javac -encoding UTF-8 -d "$ROOT/classes" \
   "$SRC"/com/damum/daycaretemi/game/HideAndSeekGame.java \
   "$SRC"/com/damum/daycaretemi/safety/SafetyEvent.java \
   "$SRC"/com/damum/daycaretemi/safety/SafetyEventBus.java \
-  "$ROOT"/test/TestScenarios.java
+  "$SRC"/com/damum/daycaretemi/server/CommandRunner.java \
+  "$ROOT"/test/TestScenarios.java \
+  "$ROOT"/test/CommandRunnerScenarios.java
 java -cp "$ROOT/classes" TestScenarios
+java -cp "$ROOT/classes" CommandRunnerScenarios

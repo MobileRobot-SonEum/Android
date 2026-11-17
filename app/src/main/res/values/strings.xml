@@ -3,4 +3,5 @@
     <string name="status_waiting">temi 연결 대기 중…</string>
     <string name="status_connected">temi 연결됨</string>
     <string name="menu_hide_and_seek">숨바꼭질</string>
+    <string name="menu_connection_test">서버 연결 테스트</string>
 </resources>

@@ -27,6 +27,9 @@
   - temi SDK는 `temiImplementation`이라 main에서 쓰면 emulator 빌드가 컴파일 에러로 막는다.
 - **새 temi 기능이 필요하면:** ① `RobotController`(인터페이스)에 메서드·이벤트 추가 → ② `TemiRobotController`(SDK 구현)와 ③ `FakeRobotController`(흉내 구현) **둘 다** 채운다 → ④ `assembleTemiDebug`와 `assembleEmulatorDebug` 둘 다 빌드되는지 확인한다.
 - `RobotController`는 `DaycareApp`이 앱 전체에 하나만 만든다. Activity에서는 `DaycareApp.robot(this)`로 받아서 **onStart에서 `addListener`, onStop에서 `removeListener`만** 한다. `start()`는 Activity에서 부르지 않는다.
+- 서버 명령 채널 `ControlChannel`도 `DaycareApp`이 하나만 만들고 앱 시작 시 접속한다. Activity에서는 `DaycareApp.channel(this)`로 받아 onStart/onStop에서 `addListener`/`removeListener`만 한다.
+- **아이 발화 원문은 로그(Logcat 포함)·파일에 남기지 않는다** (디버그 빌드도 글자 수·alert_level 같은 메타데이터만). 서버 명령의 speak 문장도 로그에 남기지 않는다.
+- 서버 주소·키·장치 ID는 `local.properties`에만 둔다(커밋 안 됨). 코드·저장소에 키를 적지 않는다.
 - 응급 감지 이벤트(울음·비상 버튼·넘어짐·해제 음성)는 `SafetyEventBus.get().post(SafetyEvent.now(...))`로 보낸다. 감지 출처와 무관하게 같은 경로로 들어오고, 응급 대응은 여기서 규칙으로 바로 실행한다(LLM 거치지 않음).
 
 ## 대상 기기와 고정 버전
@@ -40,7 +43,7 @@ temi 태블릿: **32비트 ARM(armeabi-v7a, RK3288), Android 6.0 (API 23)**
 | minSdk | **23** | temi |
 | `desugar_jdk_libs` | 2.1.5 | MediaPipe가 쓰는 `java.util.Optional` 등 API 24 클래스를 API 23에서 사용 |
 | temi SDK | 0.10.80 | `temiImplementation` (temi 빌드에만 포함) |
-| OkHttp | 4.12.0 | 노트북 서버 WebSocket |
+| OkHttp | 4.12.0 | 노트북 스트리밍 서버 WebSocket, EC2 에이전트 서버 HTTPS·WSS |
 | appcompat / material / constraintlayout | 1.6.1 / 1.5.0 / 2.1.4 | compileSdk 33 호환 |
 | AGP / Gradle | 9.4.1 / 9.6.0 | |
 | Gradle 실행 JDK | 25 (`gradle/gradle-daemon-jvm.properties`, foojay 툴체인) | Android Studio JBR(25)로 빌드 |
@@ -70,7 +73,7 @@ Android/                         ← git 저장소 루트 (C:\Users\hamse\TemiPr
   app/                           temi 앱 (패키지 com.damum.daycaretemi, 앱 이름 "어린이집 temi")
     src/main/                    ← 두 빌드 공통. temi SDK import 금지
       java/com/damum/daycaretemi/
-        DaycareApp.java            Application. RobotController 1개 생성·start() → DaycareApp.robot(ctx)
+        DaycareApp.java            Application. RobotController·ControlChannel 1개씩 생성·start() → DaycareApp.robot(ctx), channel(ctx)
         MainActivity.java          첫 화면: 연결 상태, 연결되면 "안녕하세요", SafetyEvent 로그, 기능 화면 진입 버튼
         game/HideAndSeekGame.java      숨바꼭질 상태 머신 (Android UI 없음 → verification/에서 테스트)
         game/HideAndSeekActivity.java  숨바꼭질 화면 (layout/activity_hide_and_seek.xml)
@@ -78,6 +81,14 @@ Android/                         ← git 저장소 루트 (C:\Users\hamse\TemiPr
         robot/BaseRobotController.java 리스너 관리·메인 스레드 전달 (두 구현 공통)
         safety/SafetyEvent.java        응급 이벤트 (type, source, timestamp, location?, confidence?)
         safety/SafetyEventBus.java     앱 내부 이벤트 버스 (메인 스레드 전달)
+        server/ServerConfig.java       BuildConfig(local.properties)의 서버 주소·키·장치 ID
+        server/TrustedHttp.java        앱 공용 OkHttpClient: 시스템 저장소 + ISRG Root X1(res/raw) 신뢰, 호스트 검증 유지
+        server/AgentApi.java           GET /health, POST /agent/child (연결 5초·읽기 15초, 대체 답변)
+        server/AgentError.java         오류 분류: DNS / TLS / 401 / 403 / 시간 초과 / 5xx / 네트워크
+        server/ControlChannel.java     wss /ws/temi 명령 채널: ack·ping/pong·재접속(3→30초)·최근 명령 20개
+        server/CommandRunner.java      명령 큐 → RobotController (go_to·speak·stop, start_game·start_delivery는 not_implemented)
+        server/ConnectionTestActivity.java  서버 연결 테스트 화면 (메뉴)
+      res/raw/isrg_root_x1.pem   Let's Encrypt ISRG Root X1 (SHA-256 지문은 파일 머리·TrustedHttp에)
       keepRules/rules.keep       R8 keep 규칙 (AGP 9 방식, 기존 proguard-rules.pro 역할)
       res/layout/activity_main.xml   상태 텍스트 + 기능 버튼 + dev_container(빌드별 영역)
     src/temi/                    ← temi 빌드에만
@@ -123,6 +134,7 @@ export JAVA_HOME="/c/Program Files/Android/Android Studio/jbr"     # Git Bash
 ./gradlew assembleDebug           # 둘 다
 ```
 `local.properties`(sdk.dir)는 git에 없음 — Android Studio가 자동 생성하거나 직접 `sdk.dir=C\:\\Users\\<사용자>\\AppData\\Local\\Android\\Sdk` 작성.
+에이전트 서버 항목(`agent.baseUrl`, `agent.apiKey`, `temi.deviceId`)도 여기에 추가 → BuildConfig로 주입 (`local.properties.example` 참고, 바꾸면 다시 빌드). ⚠ 키는 APK 안 BuildConfig에 평문으로 들어가므로 APK를 밖에 배포하지 않는다.
 
 temi에 설치 (adb는 와이파이 연결):
 ```bash
@@ -143,6 +155,14 @@ adb logcat -s DaycareTemi TemiRobot     # "onRobotReady: true", "onReadyChanged:
 ### 모델 파일 (`*.task`, git 제외)
 필요해지면 `app/src/main/assets/`에 넣는다. `C:\Users\hamse\Temi_test_1\app\src\main\assets\`에서 복사하거나 MediaPipe 공식 모델 페이지에서 받는다.
 - `holistic_landmarker.task` (13.7MB), `pose_landmarker_lite.task` (5.8MB)
+
+## 에이전트 서버 (EC2) 연동
+- 서버 저장소: `C:\Users\hamse\TemiProject\Server` — 규격 문서 `docs/temi_api.md`(HTTP), `docs/control_protocol.md`(명령 채널 v1).
+- 주소 `https://temi-domain.duckdns.org` (Caddy + Let's Encrypt). 인증 헤더 `X-API-Key`(temi 역할 키), 명령 채널은 `X-Device-Id`도.
+- **TLS (2026-11-17 temi 실기기 확인):** temi(Android 6) 시스템 저장소(158개)에 ISRG Root X1이 없음(`6187b673.0` 없음). network_security_config는 API 24부터라 못 씀 → `TrustedHttp`가 시스템 + `res/raw/isrg_root_x1.pem`을 함께 신뢰. 서버 체인: leaf(ECDSA) ← YE2 ← Root YE ← ISRG Root X2 ← X1(교차 서명). temi는 TLS 1.2(ECDHE-ECDSA-AES128-GCM)로 접속. `/health` 성공 확인.
+- 명령 채널: 앱 시작 시 접속, 끊기면 3초부터 2배씩 최대 30초 재접속, welcome 받으면 3초로 초기화. **close 4000(다른 연결로 교체)·HTTP 401/403이면 재접속 안 함** (규격 문서는 4000도 재접속이라고 되어 있으나 팀 결정으로 안 함 — 같은 ID 앱 두 개가 서로 끊는 반복 방지). 연결 테스트 화면의 "다시 연결"로 수동 재시도.
+- 명령 규칙: 받자마자 ack, 큐에서 하나씩, failed/rejected면 남은 명령 rejected("앞 명령 실패로 취소"), stop은 즉시(정지 → stop completed → 하던 명령 failed → 큐 rejected). 끊기면 결과 없이 잊음. 위치 이름은 대소문자 무시. go_to 120초·speak 30초 기본 제한 시간(서버 timeout_s 우선), 시간 초과 시 이동/말하기 정지 후 failed. 큐 규칙은 `verification/test/CommandRunnerScenarios.java`로 시험.
+- 아직 안 한 것: `start_game`(숨바꼭질도 교사의 화면 확인이 필요해 원격 시작 안 함), `start_delivery`(담당 팀원 구현 전) → rejected("not_implemented"). 아이 대화 화면에서 start_game·stop만 허용하는 제한, 5xx·네트워크 오류 1회 재시도는 미구현.
 
 ## 네트워크
 - 노트북과 temi가 다른 서브넷이었음 (노트북 172.17.69.x / temi 172.17.71.x).

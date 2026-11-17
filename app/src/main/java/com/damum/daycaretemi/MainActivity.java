@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.damum.daycaretemi.game.HideAndSeekActivity;
 import com.damum.daycaretemi.robot.RobotController;
 import com.damum.daycaretemi.safety.SafetyEvent;
+import com.damum.daycaretemi.server.ConnectionTestActivity;
 import com.damum.daycaretemi.safety.SafetyEventBus;
 
 /** 첫 화면: RobotController 연결 상태 표시, 연결되면 "안녕하세요", 기능 화면 진입 버튼. */
@@ -51,6 +52,8 @@ public class MainActivity extends AppCompatActivity {
         if (savedInstanceState != null) greeted = savedInstanceState.getBoolean(KEY_GREETED);
         findViewById(R.id.btn_hide_and_seek).setOnClickListener(v ->
                 startActivity(new Intent(this, HideAndSeekActivity.class)));
+        findViewById(R.id.btn_connection_test).setOnClickListener(v ->
+                startActivity(new Intent(this, ConnectionTestActivity.class)));
         FlavorModule.attachDevTools(this, findViewById(R.id.dev_container));
     }
 

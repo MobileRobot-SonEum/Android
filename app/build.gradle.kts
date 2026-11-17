@@ -1,5 +1,18 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
+}
+
+// 에이전트 서버 주소·키·장치 ID는 local.properties(커밋 안 됨)에서 읽어 BuildConfig로 주입.
+// 항목 이름은 local.properties.example 참고. 없으면 빈 문자열 → 앱 화면에 "설정 필요" 표시.
+val localProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.isFile) f.inputStream().use { load(it) }
+}
+fun localString(key: String): String {
+    val v = localProps.getProperty(key, "").trim()
+    return "\"" + v.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 }
 
 android {
@@ -17,10 +30,18 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        buildConfigField("String", "AGENT_BASE_URL", localString("agent.baseUrl"))
+        buildConfigField("String", "AGENT_API_KEY", localString("agent.apiKey"))
+        buildConfigField("String", "TEMI_DEVICE_ID", localString("temi.deviceId"))
+
         // temi(RK3288)는 32비트 ARM만 지원
         ndk {
             abiFilters += "armeabi-v7a"
         }
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     androidResources {
@@ -69,7 +90,7 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(libs.bundles.camerax)
 
-    // 노트북 서버와 WebSocket 통신
+    // 노트북 스트리밍 서버(ws://)·EC2 에이전트 서버(https/wss) 통신
     implementation(libs.okhttp)
 
     testImplementation(libs.junit)
