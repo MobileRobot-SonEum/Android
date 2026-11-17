@@ -7,6 +7,14 @@
 - `FlavorModule.attachDevTools`를 `public`으로 바꿨습니다(game 패키지에서 호출).
 - `verification/`은 저장소 루트로, 문서는 `docs/`로 옮겼습니다.
 - 검증: `verification/run.sh` 5개 시나리오 통과(조심 주행 켜기/복원 검사 추가), `assembleTemiDebug`·`assembleEmulatorDebug` 빌드 성공.
+- 감지 시험 성공 표시(`detectionTestSeen`)를 static으로 바꿔 화면을 다시 열어도 유지.
+- TemiRobotController에 진단 로그 추가: 감지 모드 켤 때 `diag: detectionModeOn / privacyMode / selectedKiosk / kioskModeOn / locations`, 감지 이벤트 원값 `onDetectionStateChanged: n`.
+
+## temi 실기기 시험 (2026-11-17)
+
+- 성공: SETTINGS 권한 창 → 사람 감지 이벤트 → 장소 목록 갱신 → 카운트 → 순찰 이동 → 도착 후 감지 → 발견 → 종료. 게임 2회 모두 이동 시 조심 주행 켜짐, 종료 시 복원 로그 확인. 크래시 없음.
+- 처음엔 권한을 허용해도 `detectionModeOn=false`였음(요청이 에러 없이 무시됨). **설정 → 홈 화면 → 기본 화면을 이 앱으로** 바꾼 뒤 감지 이벤트가 들어옴.
+- 장소가 `home base`뿐이면 순찰 장소 선택이 비활성 → 장소를 2곳 이상 저장해야 함.
 
 ## 이전 간단 버전과 달라진 부분
 

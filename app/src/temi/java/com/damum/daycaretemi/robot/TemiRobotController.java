@@ -74,6 +74,7 @@ public final class TemiRobotController extends BaseRobotController implements
             }
             // SDK에서는 이동하지 않을 때 Detection Mode가 활성화될 수 있음.
             robot.setDetectionModeOn(true, DETECTION_METERS);
+            logDetectionDiagnostics();
             updateDetection(true, "감지 모드 요청 완료(1.5m). 실제 사람 감지 시험이 필요합니다.");
         } catch (RuntimeException e) {
             Log.e(TAG, "감지 모드 설정 실패", e);
@@ -152,7 +153,21 @@ public final class TemiRobotController extends BaseRobotController implements
     @Override public void onLocationsUpdated(List<String> locations) {
         notifyLocations(locations == null ? Collections.emptyList() : new ArrayList<>(locations));
     }
+    /** 감지 이벤트가 안 올 때 원인 확인용 (프라이버시 모드면 카메라 꺼짐, 구형 런처는 Kiosk 선택 필요). */
+    private void logDetectionDiagnostics() {
+        try {
+            Log.i(TAG, "diag: detectionModeOn=" + robot.isDetectionModeOn()
+                    + " privacyMode=" + robot.getPrivacyMode()
+                    + " selectedKiosk=" + robot.isSelectedKioskApp()
+                    + " kioskModeOn=" + robot.isKioskModeOn()
+                    + " locations=" + robot.getLocations());
+        } catch (RuntimeException e) {
+            Log.w(TAG, "diag 실패", e);
+        }
+    }
+
     @Override public void onDetectionStateChanged(int state) {
+        Log.i(TAG, "onDetectionStateChanged: " + state);
         if (state == OnDetectionStateChangedListener.DETECTED) notifyPerson(true);
         else if (state == OnDetectionStateChangedListener.LOST || state == OnDetectionStateChangedListener.IDLE) notifyPerson(false);
     }

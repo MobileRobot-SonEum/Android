@@ -134,8 +134,8 @@ adb logcat -s DaycareTemi TemiRobot     # "onRobotReady: true", "onReadyChanged:
 에뮬레이터: `app-emulator-debug.apk`를 같은 방식으로 설치, `adb logcat -s DaycareTemi FakeRobot SafetyEvent`.
 
 ## temi SDK 0.10.80 확인 메모
-- 사람 감지: `OnDetectionStateChangedListener` (IDLE=0, LOST=1, DETECTED=2) → `onPersonDetected(true/false)` (IDLE도 false). **`setDetectionModeOn(true, 1.5f)`를 켜야** 이벤트가 오고, 이건 **SDK SETTINGS 권한**이 있어야 함. TemiRobotController는 연결 시 권한이 있으면 켜고, 없으면 `requestDetectionPermission()`(교사 버튼)으로 temi 권한 창을 띄움 → `onDetectionConfigurationChanged`. temi 실기기에서 동작 미확인.
-- 주행 설정: `setGoToSpeed(SpeedLevel)`, `setNavigationSafety(SafetyLevel)` (SLOW/MEDIUM/HIGH/DEFAULT, SETTINGS 권한 필요, temi 시스템 설정에 남음). `RobotController.setCautiousNavigation(true/false)`로 감쌌음 — 켜기 전 값을 기억했다가 false 때 되돌림. `goTo()` 자체는 속도를 바꾸지 않음.
+- 사람 감지: `OnDetectionStateChangedListener` (IDLE=0, LOST=1, DETECTED=2) → `onPersonDetected(true/false)` (IDLE도 false). **`setDetectionModeOn(true, 1.5f)`를 켜야** 이벤트가 오고, 이건 **SDK SETTINGS 권한**이 있어야 함. TemiRobotController는 연결 시 권한이 있으면 켜고, 없으면 `requestDetectionPermission()`(교사 버튼)으로 temi 권한 창을 띄움 → `onDetectionConfigurationChanged`. **temi 실기기 확인(2026-11-17): temi 설정 → 홈 화면 → 기본 화면을 이 앱으로 지정해야 감지 이벤트가 옴** (안 하면 `setDetectionModeOn`이 에러 없이 무시되고 `isDetectionModeOn()=false`). 설정에 "Kiosk" 메뉴는 없음. 진단: `adb logcat -s TemiRobot`의 `diag:` 줄.
+- 주행 설정: `setGoToSpeed(SpeedLevel)`, `setNavigationSafety(SafetyLevel)` (SLOW/MEDIUM/HIGH/DEFAULT, SETTINGS 권한 필요, temi 시스템 설정에 남음). `RobotController.setCautiousNavigation(true/false)`로 감쌌음 — 켜기 전 값을 기억했다가 false 때 되돌림. `goTo()` 자체는 속도를 바꾸지 않음. 실기기에서 켜기/복원 동작 확인.
 - TTS 취소: `cancelAllTtsRequests()` → `cancelSpeech()`.
 - 음성 인식(ASR): `addAsrListener(AsrListener.onAsrResult(String))`, `addWakeupWordListener(onWakeupWord(String, int))`, `addNlpListener`, `askQuestion(String)`, `wakeup()`, `finishConversation()`, `toggleWakeup(boolean)`, `addOnConversationStatusChangedListener`. → "테미, 괜찮아" 해제에 사용 예정 (RobotController 추가는 다음 단계).
 - 기타 참고: `addOnUserInteractionChangedListener(boolean)`, `addOnDetectionDataChangedListener(DetectionData)`, `showAlertNotification`, `setKioskModeOn` 등.

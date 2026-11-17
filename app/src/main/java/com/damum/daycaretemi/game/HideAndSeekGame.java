@@ -102,7 +102,8 @@ public final class HideAndSeekGame {
     private String message = "사람 감지 시험과 안전한 순찰 장소 2~3곳을 준비하세요.";
     private String movingTo;
     private boolean attached;
-    private boolean detectionTestSeen;
+    /** 사람 감지 시험 성공 여부. 화면을 다시 열어도 유지되도록 앱 프로세스 단위(static), 연결이 끊기면 초기화. */
+    private static boolean detectionTestSeen;
     private boolean personVisible;
     private boolean personLatched;
     private long lastFoundAt = -1;
