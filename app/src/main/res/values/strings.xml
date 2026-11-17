@@ -2,4 +2,5 @@
     <string name="app_name">어린이집 temi</string>
     <string name="status_waiting">temi 연결 대기 중…</string>
     <string name="status_connected">temi 연결됨</string>
+    <string name="menu_hide_and_seek">숨바꼭질</string>
 </resources>

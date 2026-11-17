@@ -1,5 +1,13 @@
 # 변경 사항 및 검증 기록
 
+## 저장소에 합칠 때 바뀐 점 (2026-11-17, PR #1 후속)
+
+- 게임 화면은 MainActivity를 바꾸지 않고 `game/HideAndSeekActivity`로 분리했습니다. MainActivity에는 진입 버튼만 추가했습니다.
+- `goTo()`는 원래대로 되돌렸습니다(저속 고정·권한 예외 없음 → 식판·간식 배달에는 영향 없음). 저속·안전 설정은 `RobotController.setCautiousNavigation(boolean)`으로 분리해서, 게임이 이동 직전에 켜고 끝날 때 원래 값으로 되돌립니다.
+- `FlavorModule.attachDevTools`를 `public`으로 바꿨습니다(game 패키지에서 호출).
+- `verification/`은 저장소 루트로, 문서는 `docs/`로 옮겼습니다.
+- 검증: `verification/run.sh` 5개 시나리오 통과(조심 주행 켜기/복원 검사 추가), `assembleTemiDebug`·`assembleEmulatorDebug` 빌드 성공.
+
 ## 이전 간단 버전과 달라진 부분
 
 - `HideAndSeekGame.java`: 장소 자동 순찰, 도착 후 정지 감지, 발견 후 대기, 5/10분 시간 로직, TTS 순차 처리, 이동 중 오류 시 교사 확인, 단계별 상태.
@@ -22,7 +30,6 @@
 ## 아직 확인하지 못한 것
 
 - 실제 temi 장비의 Launcher / TTS / 감지 센서 / 지도 저장 상태.
-- temi SDK 0.10.80 의존성 포함 **실제 Android Gradle 전체 빌드**. 현재 머신은 Gradle ZIP 다운로드 DNS 실패.
 - 강의실의 계단, 장애물, 유리 벽, 학생 접근에 대한 안전한 실제 이동.
 
 이 코드는 실기기 시연을 위한 **시험용 프로젝트**입니다. 테스트를 통과하지 않은 상태에서 미취학 아동과 함께 자동 주행시키지 마세요.

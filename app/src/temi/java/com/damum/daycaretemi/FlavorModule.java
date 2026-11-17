@@ -18,6 +18,6 @@ public final class FlavorModule {
     }
 
     /** temi 빌드에는 개발 패널 없음 */
-    static void attachDevTools(AppCompatActivity activity, ViewGroup container) {
+    public static void attachDevTools(AppCompatActivity activity, ViewGroup container) {
     }
 }

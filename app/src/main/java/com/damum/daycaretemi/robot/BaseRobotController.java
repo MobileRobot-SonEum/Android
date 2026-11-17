@@ -27,6 +27,7 @@ public abstract class BaseRobotController implements RobotController {
         if (!listeners.add(listener)) return;
         main.post(() -> {
             if (listeners.contains(listener)) listener.onReadyChanged(ready);
+            if (listeners.contains(listener)) listener.onDetectionConfigurationChanged(isDetectionConfigured(), detectionStatus());
         });
     }
 
@@ -43,6 +44,10 @@ public abstract class BaseRobotController implements RobotController {
         main.post(() -> {
             for (Listener l : listeners) e.send(l);
         });
+    }
+
+    protected void notifyDetectionConfiguration(boolean ready, String detail) {
+        dispatch(l -> l.onDetectionConfigurationChanged(ready, detail));
     }
 
     protected void notifyReady(boolean r) {

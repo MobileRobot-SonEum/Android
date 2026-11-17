@@ -1,4 +1,4 @@
-package com.damum.daycaretemi;
+package com.damum.daycaretemi.game;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
@@ -12,7 +12,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.damum.daycaretemi.game.HideAndSeekGame;
+import com.damum.daycaretemi.DaycareApp;
+import com.damum.daycaretemi.FlavorModule;
+import com.damum.daycaretemi.R;
 import com.damum.daycaretemi.robot.RobotController;
 
 import java.util.ArrayList;
@@ -20,8 +22,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 
-/** 실제 temi / emulator 공통 게임 화면. 모든 로봇 제어는 RobotController를 통한다. */
-public class MainActivity extends AppCompatActivity {
+/** 숨바꼭질 게임 화면 (MainActivity에서 진입). 모든 로봇 제어는 RobotController를 통한다. */
+public class HideAndSeekActivity extends AppCompatActivity {
     private RobotController robot;
     private HideAndSeekGame game;
     private TextView connectionText, detectorText, testText, phaseText;
@@ -50,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_hide_and_seek);
         robot = DaycareApp.robot(this);
         connectionText = findViewById(R.id.status_text);
         detectorText = findViewById(R.id.detector_text);

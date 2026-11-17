@@ -31,6 +31,8 @@ public final class FakeRobotController extends BaseRobotController {
     private Runnable pendingMove;      // 메인 스레드에서만 접근
     private String movingTo;           // null이면 회전 중(또는 정지)
     private long speechEndsAt;
+    private boolean detectionConfigured = true;
+    private final List<Runnable> pendingSpeeches = new ArrayList<>();
 
     private static void log(String msg) {
         DevLog.add(TAG, msg);
@@ -46,6 +48,22 @@ public final class FakeRobotController extends BaseRobotController {
         }, READY_DELAY_MS);
     }
 
+    @Override public boolean isDetectionConfigured() { return detectionConfigured; }
+    @Override public String detectionStatus() { return "가상 감지 준비됨. 개발 패널에서 사람 감지를 시험하세요."; }
+    @Override public void requestDetectionPermission() {
+        detectionConfigured = true;
+        notifyDetectionConfiguration(true, detectionStatus());
+    }
+    @Override public void setCautiousNavigation(boolean on) {
+        log("setCautiousNavigation(" + on + ")" + (on ? " → 느린 속도·장애물 회피 높음" : " → 기본값"));
+    }
+    @Override public void cancelSpeech() {
+        for (Runnable callback : pendingSpeeches) main.removeCallbacks(callback);
+        pendingSpeeches.clear();
+        speechEndsAt = android.os.SystemClock.uptimeMillis();
+        log("cancelSpeech()");
+    }
+
     @Override
     public void speak(String text) {
         log("speak(\"" + text + "\")");
@@ -54,11 +72,23 @@ public final class FakeRobotController extends BaseRobotController {
         long startAt = Math.max(now, speechEndsAt);
         long duration = Math.max(800, text.length() * 150L);
         speechEndsAt = startAt + duration;
-        main.postAtTime(() -> notifySpeech(text, SpeechStatus.STARTED), startAt);
-        main.postAtTime(() -> {
-            log("말하기 끝: \"" + text + "\"");
-            notifySpeech(text, SpeechStatus.COMPLETED);
-        }, speechEndsAt);
+        Runnable onStart = new Runnable() {
+            @Override public void run() {
+                pendingSpeeches.remove(this);
+                notifySpeech(text, SpeechStatus.STARTED);
+            }
+        };
+        Runnable onComplete = new Runnable() {
+            @Override public void run() {
+                pendingSpeeches.remove(this);
+                log("말하기 끝: \"" + text + "\"");
+                notifySpeech(text, SpeechStatus.COMPLETED);
+            }
+        };
+        pendingSpeeches.add(onStart);
+        pendingSpeeches.add(onComplete);
+        main.postAtTime(onStart, startAt);
+        main.postAtTime(onComplete, speechEndsAt);
     }
 
     @Override

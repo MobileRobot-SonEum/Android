@@ -23,6 +23,7 @@
         android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
+            android:screenOrientation="landscape"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,6 +31,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- 숨바꼭질 게임 (MainActivity 버튼으로 진입). 회전으로 게임이 끊기지 않도록 가로 고정 -->
+        <activity
+            android:name=".game.HideAndSeekActivity"
+            android:screenOrientation="landscape"
+            android:exported="false" />
+        <!-- SDK Settings 권한 선언 -->
+        <meta-data android:name="com.robotemi.sdk.metadata.PERMISSIONS"
+            android:value="com.robotemi.permission.settings" />
+        <!-- 구버전 Launcher의 Detection Mode에서 Kiosk 앱 선언 필요.
+             선언만으로 선택되지 않으므로 temi 설정에서 이 앱을 Kiosk로 선택해야 합니다. -->
+        <meta-data android:name="com.robotemi.sdk.metadata.KIOSK" android:value="true" />
         <!-- temi 런처에 스킬(앱)로 표시 -->
         <meta-data
             android:name="com.robotemi.sdk.metadata.SKILL"

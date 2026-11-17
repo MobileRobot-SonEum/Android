@@ -22,6 +22,7 @@ public final class TestScenarios {
             h.postDelayed(()->{for(Listener l: new ArrayList<>(listeners))l.onSpeechStatus(s,SpeechStatus.COMPLETED);},10);
         }
         public void cancelSpeech() {}
+        boolean cautious; public void setCautiousNavigation(boolean on){cautious=on;}
         public void goTo(String l){
             moves.add(l); lastMove=l;
             if(autoArrive) new Handler(android.os.Looper.getMainLooper()).postDelayed(()->arrive(l),1000);
@@ -53,6 +54,7 @@ public final class TestScenarios {
         eq(ui.last.phase,HideAndSeekGame.Phase.COUNTING,"counting phase");
         Handler.advance(30000);
         yes(!bot.moves.isEmpty(),"auto route started without teacher selecting each stop");
+        yes(bot.cautious,"cautious navigation on before moving");
         eq(bot.moves.get(0),"블록 코너","first waypoint");
         yes(bot.spoken.get(0).contains("꼭꼭 숨어라"),"opening speech");
         Handler.advance(1500);
@@ -100,6 +102,7 @@ public final class TestScenarios {
         eq(ui.last.phase,HideAndSeekGame.Phase.MOVING,"manual resume");
         eq(bot.moves.get(bot.moves.size()-1),"블록 코너","retry failed waypoint");
         game.stopByTeacher();eq(ui.last.phase,HideAndSeekGame.Phase.STOPPED,"teacher stop");
+        yes(!bot.cautious,"cautious navigation restored after stop");
         yes(bot.stops>0,"safety stop invoked");
         int noFurther=bot.moves.size();Handler.advance(100000);eq(bot.moves.size(),noFurther,"no move after stop");
         game.detach();

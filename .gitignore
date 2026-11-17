@@ -34,3 +34,6 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# verification/run.sh 산출물
+verification/classes/

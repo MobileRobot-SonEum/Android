@@ -59,6 +59,9 @@ MediaPipe·CameraX는 MainActivity에서 아직 쓰지 않지만, 온디바이�
   - `CAMERA`, `INTERNET` 권한
   - `<meta-data android:name="com.robotemi.sdk.metadata.SKILL" .../>` — temi 런처에 앱 표시
   - `android:name=".DaycareApp"` — RobotController 단일 인스턴스
+  - `com.robotemi.sdk.metadata.PERMISSIONS` = `com.robotemi.permission.settings` — 감지 모드·주행 속도 설정에 필요한 SDK SETTINGS 권한
+  - `com.robotemi.sdk.metadata.KIOSK` = true — 구형 런처 Detection Mode용. 선언만으로는 안 되고 temi 설정에서 이 앱을 Kiosk로 선택해야 함
+  - 모든 Activity `screenOrientation="landscape"` — 회전으로 Activity가 재생성되면 진행 중인 게임이 중단되므로
 - temi 빌드의 병합된 manifest에는 temi SDK가 넣는 `READ/WRITE_EXTERNAL_STORAGE` 권한과 `TemiSdkContentProvider`도 들어간다(정상).
 
 ## 폴더 구조 (현재)
@@ -68,13 +71,15 @@ Android/                         ← git 저장소 루트 (C:\Users\hamse\TemiPr
     src/main/                    ← 두 빌드 공통. temi SDK import 금지
       java/com/damum/daycaretemi/
         DaycareApp.java            Application. RobotController 1개 생성·start() → DaycareApp.robot(ctx)
-        MainActivity.java          연결 상태 표시, 연결되면 "안녕하세요", SafetyEvent 로그
+        MainActivity.java          첫 화면: 연결 상태, 연결되면 "안녕하세요", SafetyEvent 로그, 기능 화면 진입 버튼
+        game/HideAndSeekGame.java      숨바꼭질 상태 머신 (Android UI 없음 → verification/에서 테스트)
+        game/HideAndSeekActivity.java  숨바꼭질 화면 (layout/activity_hide_and_seek.xml)
         robot/RobotController.java     로봇 제어 인터페이스 (팀 공통)
         robot/BaseRobotController.java 리스너 관리·메인 스레드 전달 (두 구현 공통)
         safety/SafetyEvent.java        응급 이벤트 (type, source, timestamp, location?, confidence?)
         safety/SafetyEventBus.java     앱 내부 이벤트 버스 (메인 스레드 전달)
       keepRules/rules.keep       R8 keep 규칙 (AGP 9 방식, 기존 proguard-rules.pro 역할)
-      res/layout/activity_main.xml   상태 텍스트 + dev_container(빌드별 영역)
+      res/layout/activity_main.xml   상태 텍스트 + 기능 버튼 + dev_container(빌드별 영역)
     src/temi/                    ← temi 빌드에만
       java/.../FlavorModule.java       createRobot → TemiRobotController, attachDevTools → 없음
       java/.../robot/TemiRobotController.java   temi SDK 구현
@@ -84,6 +89,8 @@ Android/                         ← git 저장소 루트 (C:\Users\hamse\TemiPr
       java/.../dev/DevPanel.java       오른쪽 위 시뮬레이션 버튼 + 하단 로그
       java/.../dev/DevLog.java
       res/layout/dev_panel.xml, res/values/dev_styles.xml
+  docs/HIDE_AND_SEEK_GUIDE.md    숨바꼭질 사용·안전 가이드 (전진), docs/HIDE_AND_SEEK_NOTES.md 변경 기록
+  verification/                  게임 로직 JVM 테스트 (Android stub). `bash verification/run.sh` (JBR의 javac 필요)
   gradle/libs.versions.toml      모든 의존성 버전 (단일 출처)
   gradle/gradle-daemon-jvm.properties   Gradle JDK 25 툴체인
   CLAUDE.md
@@ -127,7 +134,9 @@ adb logcat -s DaycareTemi TemiRobot     # "onRobotReady: true", "onReadyChanged:
 에뮬레이터: `app-emulator-debug.apk`를 같은 방식으로 설치, `adb logcat -s DaycareTemi FakeRobot SafetyEvent`.
 
 ## temi SDK 0.10.80 확인 메모
-- 사람 감지: `OnDetectionStateChangedListener` (IDLE=0, LOST=1, DETECTED=2) → `onPersonDetected(true/false)`. **`setDetectionModeOn(true)`를 켜야** 이벤트가 옴 (TemiRobotController가 연결 시 켬). 감지 거리 인자 버전 `setDetectionModeOn(boolean, float)`도 있음. temi 실기기에서 동작 미확인.
+- 사람 감지: `OnDetectionStateChangedListener` (IDLE=0, LOST=1, DETECTED=2) → `onPersonDetected(true/false)` (IDLE도 false). **`setDetectionModeOn(true, 1.5f)`를 켜야** 이벤트가 오고, 이건 **SDK SETTINGS 권한**이 있어야 함. TemiRobotController는 연결 시 권한이 있으면 켜고, 없으면 `requestDetectionPermission()`(교사 버튼)으로 temi 권한 창을 띄움 → `onDetectionConfigurationChanged`. temi 실기기에서 동작 미확인.
+- 주행 설정: `setGoToSpeed(SpeedLevel)`, `setNavigationSafety(SafetyLevel)` (SLOW/MEDIUM/HIGH/DEFAULT, SETTINGS 권한 필요, temi 시스템 설정에 남음). `RobotController.setCautiousNavigation(true/false)`로 감쌌음 — 켜기 전 값을 기억했다가 false 때 되돌림. `goTo()` 자체는 속도를 바꾸지 않음.
+- TTS 취소: `cancelAllTtsRequests()` → `cancelSpeech()`.
 - 음성 인식(ASR): `addAsrListener(AsrListener.onAsrResult(String))`, `addWakeupWordListener(onWakeupWord(String, int))`, `addNlpListener`, `askQuestion(String)`, `wakeup()`, `finishConversation()`, `toggleWakeup(boolean)`, `addOnConversationStatusChangedListener`. → "테미, 괜찮아" 해제에 사용 예정 (RobotController 추가는 다음 단계).
 - 기타 참고: `addOnUserInteractionChangedListener(boolean)`, `addOnDetectionDataChangedListener(DetectionData)`, `showAlertNotification`, `setKioskModeOn` 등.
 

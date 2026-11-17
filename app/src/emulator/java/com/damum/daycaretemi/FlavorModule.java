@@ -19,7 +19,7 @@ public final class FlavorModule {
     }
 
     /** 화면 구석 개발 패널(이벤트 버튼) + 하단 로그 영역 */
-    static void attachDevTools(AppCompatActivity activity, ViewGroup container) {
+    public static void attachDevTools(AppCompatActivity activity, ViewGroup container) {
         DevPanel.attach(activity, container);
     }
 }

@@ -1,16 +1,15 @@
 # temi 숨바꼭질 (강의실 시연 버전) — 처음 시작하는 사람용
 
-## 1. 이 ZIP 파일의 정체
+## 1. 코드 위치
 
-이 파일은 **APK가 아니라 Android Studio 프로젝트의 전체 소스코드**입니다.
+이 저장소(`Android/`)의 앱에 합쳐져 있습니다. 앱 첫 화면(MainActivity)의 **숨바꼭질** 버튼으로 들어갑니다.
 
-1. `Android Studio`를 열고 `Open`을 누릅니다.
-2. 압축을 풀고 **`settings.gradle.kts`가 있는 `Android-main` 폴더**를 선택합니다.
-3. 코드는 `app/src/main/java/com/damum/daycaretemi/`에 있습니다.
-4. 게임 규칙은 `game/HideAndSeekGame.java`에 있습니다.
-5. 화면은 `MainActivity.java`, `res/layout/activity_main.xml`입니다.
-6. 실제 temi SDK 연결은 `app/src/temi/java/.../robot/TemiRobotController.java`입니다.
-7. PC 가상 로봇은 `app/src/emulator/java/.../robot/FakeRobotController.java`입니다.
+- 게임 규칙(상태 머신): `app/src/main/java/com/damum/daycaretemi/game/HideAndSeekGame.java`
+- 게임 화면: `game/HideAndSeekActivity.java`, `res/layout/activity_hide_and_seek.xml`
+- temi SDK 연결: `app/src/temi/java/.../robot/TemiRobotController.java`
+- PC 가상 로봇: `app/src/emulator/java/.../robot/FakeRobotController.java`
+- 로봇 기능은 `RobotController` 인터페이스로만 씁니다. 게임이 추가로 쓰는 것: `requestDetectionPermission` / `isDetectionConfigured` / `detectionStatus` / `cancelSpeech` / `setCautiousNavigation`
+- 로직 테스트(로봇·Android 없이): `verification/run.sh`
 
 ## 2. 게임 진행
 
@@ -31,8 +30,8 @@
 1. **평지 강의실 공간**만 사용하세요. 계단·단상 가장자리·전선·가방·책상 다리는 순찰 경로에서 제외합니다.
 2. temi 기본 **지도(Map)** 에 2~3곳을 각각 다른 이름(예: `게임A`, `게임B`, `게임C`)으로 저장하세요. **도착했을 때 카메라가 숨는 곳을 바라보도록** 위치 방향도 확인하세요. `home base` 및 충전 관련 장소는 선택할 수 없게 했습니다.
 3. 사람이 없는 상태에서 기본 temi 내비게이션으로 이 장소를 순서대로 한 번 다녀오게 하여 **경로가 안전한지 확인**하세요. 경로를 미리 검증하지 않고 참가자를 투입하지 마세요.
-4. `Android-main`을 Android Studio로 열고 `Build Variants`에서 **`temiDebug`**를 선택하세요. 빌드 후 APK는 보통 `app/build/outputs/apk/temi/debug/app-temi-debug.apk`에 생성됩니다.
-5. 로봇에 앱을 설치해 실행하세요. `temi` 빌드의 APK는 일반 Android 에뮬레이터에 설치하지 마세요.
+4. 저장소 루트(`Android/`)를 Android Studio로 열고 `Build Variants`에서 **`temiDebug`**를 선택하세요. 빌드 후 APK는 보통 `app/build/outputs/apk/temi/debug/app-temi-debug.apk`에 생성됩니다.
+5. 로봇에 앱을 설치해 실행하고 첫 화면에서 **숨바꼭질** 버튼을 누르세요. `temi` 빌드의 APK는 일반 Android 에뮬레이터에 설치하지 마세요.
 6. 필요 시 temi 설정에서 이 앱을 **Kiosk 앱으로 선택**, `Tracking User` 사용 설정을 확인합니다. 구형 Launcher에서 Detection Mode가 동작하기 위한 조건일 수 있습니다.
 7. 앱의 **`① 사람 감지 권한 설정 / 다시 확인`** 을 누르고 **SETTINGS 권한**을 허용하세요. 상태에 "감지 모드 요청 완료"가 표시되어도 실제 감지가 성공했다는 뜻은 아닙니다.
 8. 로봇이 멈춘 상태에서 진행자 한 명이 카메라 앞 1m 정도에 서서, 화면의 **`실제 사람 감지 이벤트 수신 성공`** 이 나타나는지 확인하세요. 이 검사를 통과하지 못했다면 게임을 시작하지 마세요.
@@ -46,7 +45,7 @@
 ## 4. 로봇 없이 먼저 컴퓨터에서 시험하기
 
 1. Android Studio에서 `Build Variants`를 **`emulatorDebug`**로 바꿉니다.
-2. 안드로이드 에뮬레이터를 켜고 실행하세요.
+2. 안드로이드 에뮬레이터를 켜고 실행한 뒤 **숨바꼭질** 버튼을 누르세요.
 3. 가상 로봇은 `블록 코너`, `식탁`, `교사 책상`, `놀이방` 등을 저장 위치로 가집니다. `home base`는 게임용으로 자동 제외됩니다.
 4. `블록 코너`, `놀이방`을 선택해 시작하세요. 가상 로봇이 자동으로 이동합니다.
 5. DEV 패널에서 **`사람 감지` → `사람 사라짐`**으로 이벤트를 만들 수 있습니다. 실제 앱은 감지한 사람이 사라진 뒤 3초가 지나고 발견 후 최소 8초가 지나야 다시 카운트할 수 있습니다.
@@ -55,13 +54,13 @@
 
 ## 5. 기술적 주의사항
 
-- **실제 temi SDK와 APK 빌드는 이 환경에서 수행하지 못했습니다.** Gradle 배포파일 다운로드 DNS 오류가 발생했습니다. Android Studio에서 `assembleTemiDebug`, `assembleEmulatorDebug` 빌드 확인이 필요합니다.
+- `assembleTemiDebug`, `assembleEmulatorDebug` 빌드 확인함(2026-11-17). **temi 실기기 동작은 아직 미확인.**
 - AndroidManifest에는 `KIOSK` 선언, SETTINGS 권한 메타데이터를 추가했습니다. 구형 로봇의 Launcher 설정에 따라 별도 선택/권한 허용이 필요할 수 있습니다.
 - SDK `OnDetectionStateChangedListener`는 사람 존재 여부를 알려주는 이벤트이며 얼굴/사람 ID가 아닙니다.
 - 공식 문서상 감지 거리 설정은 0.5~2.0m 범위입니다. 코드에서는 1.5m를 설정했습니다.
-- 게임은 `Go To` 속도를 SLOW, 장애물 회피를 HIGH로 설정합니다. 로봇의 시스템 설정에 남을 수 있으므로 **시연 종료 후 기존 설정으로 되돌릴지 확인**하세요.
+- 게임은 이동 직전 `setCautiousNavigation(true)`로 `Go To` 속도 SLOW, 장애물 회피 HIGH를 켜고(권한이 없어 실패하면 이동하지 않음), 게임이 끝나거나 중단되면 `false`로 **켜기 전 설정으로 되돌립니다**. 앱이 강제 종료되면 복원되지 않을 수 있으니 temi 설정을 확인하세요. 다른 기능의 `goTo`에는 영향이 없습니다.
 - 경로는 **교사가 지정한 장소만** 방문하며 새 장소를 찾아 지도에 추가하거나 강의실 전체를 무작위로 자율 탐색하는 기능은 없습니다.
-- 앱이 다른 화면으로 넘어가면 게임이 자동 중단됩니다(의도된 안전 동작). 화면 회전으로 중단되지 않도록 가로 화면으로 고정했습니다.
+- 앱이 다른 화면으로 넘어가면 게임이 자동 중단됩니다(의도된 안전 동작). 화면 회전으로 중단되지 않도록 앱 전체를 가로 화면으로 고정했습니다.
 - 5분/10분 타이머는 `SystemClock.elapsedRealtime`을 사용하므로 시계 시간 변경의 영향을 받지 않습니다.
 - 음성 재생은 하나씩 순서대로 처리하고, 타임아웃 때 기존 발화를 취소한 뒤 안내합니다. TTS 관련 시스템 설정이나 로봇 오디오 볼륨에 따라 지연이 발생할 수 있습니다.
 - 앱이 강제 종료되거나 로봇 전원이 꺼지는 등 예외 상황에 대해서는 Android 측의 정지 명령 전달이 보장되지 않습니다. 항상 교사가 현장에 있어야 합니다.

@@ -25,8 +25,21 @@ public interface RobotController {
     /** TTS. 여러 번 부르면 순서대로 말한다. 진행 상태는 {@link Listener#onSpeechStatus} */
     void speak(String text);
 
-    /** 저장된 위치로 이동. 진행 상태는 {@link Listener#onGoToStatus}, 도착 = {@link MoveStatus#COMPLETE} */
+    /** 말하는 중·대기 중인 TTS를 모두 취소 */
+    void cancelSpeech();
+
+    /**
+     * 저장된 위치로 이동. 진행 상태는 {@link Listener#onGoToStatus}, 도착 = {@link MoveStatus#COMPLETE}
+     * 속도·장애물 회피는 {@link #setCautiousNavigation}으로 정한다.
+     */
     void goTo(String location);
+
+    /**
+     * 조심 주행 모드. true = 느린 속도 + 장애물 회피 높음, false = temi 기본값으로 되돌림.
+     * temi 시스템 설정에 남으므로 켠 기능이 끝날 때 반드시 false로 되돌린다.
+     * @throws IllegalStateException true로 켜는데 SDK SETTINGS 권한이 없을 때 (켜지 못하면 이동하지 말 것)
+     */
+    void setCautiousNavigation(boolean on);
 
     /** 제자리 회전. +는 왼쪽(반시계), -는 오른쪽. 진행 상태는 {@link Listener#onTurnStatus} */
     void turnBy(int degrees);
@@ -40,7 +53,19 @@ public interface RobotController {
     /** 저장된 위치 목록 (temi 앱에서 저장한 이름, "home base" 포함) */
     List<String> getLocations();
 
-    /** 등록 직후 현재 연결 상태가 {@link Listener#onReadyChanged}로 한 번 전달된다. */
+    /**
+     * 사람 감지 준비: SDK SETTINGS 권한을 요청하고 받으면 감지 모드를 켠다.
+     * temi 화면에 권한 창이 뜨므로 교사가 누른 버튼에서만 호출한다. 결과는 {@link Listener#onDetectionConfigurationChanged}
+     */
+    void requestDetectionPermission();
+
+    /** 권한을 얻고 감지 모드를 켜도록 요청했는지 (실제 사람 감지 성공을 보장하지 않음) */
+    boolean isDetectionConfigured();
+
+    /** 감지 준비 상태 설명 (화면 표시용) */
+    String detectionStatus();
+
+    /** 등록 직후 현재 연결 상태({@link Listener#onReadyChanged})와 감지 준비 상태({@link Listener#onDetectionConfigurationChanged})가 한 번 전달된다. */
     void addListener(Listener listener);
 
     void removeListener(Listener listener);
@@ -48,6 +73,9 @@ public interface RobotController {
     /** 모든 콜백은 메인 스레드에서 호출된다. 필요한 것만 구현하면 된다. */
     interface Listener {
         default void onReadyChanged(boolean ready) {}
+
+        /** 사람 감지 준비 상태 변화 ({@link #requestDetectionPermission} 결과, 연결 끊김 등) */
+        default void onDetectionConfigurationChanged(boolean configured, String detail) {}
 
         default void onGoToStatus(String location, MoveStatus status, String detail) {}
 

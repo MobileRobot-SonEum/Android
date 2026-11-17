@@ -346,6 +346,8 @@ public final class HideAndSeekGame {
         main.removeCallbacks(moveTimeout);
         main.postDelayed(moveTimeout, MOVE_TIMEOUT);
         try {
+            // 감속 설정이 실패하면(권한 없음 등) 예외로 빠져 이동하지 않는다.
+            robot.setCautiousNavigation(true);
             robot.goTo(target);
         } catch (RuntimeException e) {
             Log.e(TAG, "이동 명령 실패", e);
@@ -391,6 +393,7 @@ public final class HideAndSeekGame {
         clearTimers();
         clearSpeech();
         safeStop();
+        restoreNavigation();
         phase = Phase.FINISHED;
         movingTo = null;
         if (allFound) {
@@ -409,6 +412,7 @@ public final class HideAndSeekGame {
         clearTimers();
         clearSpeech();
         safeStop();
+        restoreNavigation();
         phase = Phase.STOPPED;
         movingTo = null;
         message = reason;
@@ -471,6 +475,11 @@ public final class HideAndSeekGame {
     private void safeStop() {
         try { robot.stopMovement(); }
         catch (RuntimeException e) { Log.e(TAG, "이동 중지 요청 실패", e); }
+    }
+    /** 게임이 끝나면 temi 시스템 설정에 남은 저속·안전 설정을 기본값으로 되돌린다. */
+    private void restoreNavigation() {
+        try { robot.setCautiousNavigation(false); }
+        catch (RuntimeException e) { Log.e(TAG, "주행 설정 복원 실패", e); }
     }
     private void publishLocations() { ui.onLocationsUpdated(safeGetLocations()); }
     private List<String> safeGetLocations() {
