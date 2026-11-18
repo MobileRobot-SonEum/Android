@@ -74,7 +74,10 @@ Android/                         ← git 저장소 루트 (C:\Users\hamse\TemiPr
     src/main/                    ← 두 빌드 공통. temi SDK import 금지
       java/com/damum/daycaretemi/
         DaycareApp.java            Application. RobotController·ControlChannel 1개씩 생성·start() → DaycareApp.robot(ctx), channel(ctx)
-        MainActivity.java          첫 화면: 연결 상태, 연결되면 "안녕하세요", SafetyEvent 로그, 기능 화면 진입 버튼
+        MainActivity.java          첫 화면: 연결 상태, 연결되면 "안녕하세요", SafetyEvent 로그, 기능 화면 진입 버튼(숨바꼭질·놀이·서버 연결 테스트)
+        GameMenuActivity.java      놀이 메뉴: 기억·이야기 놀이 / 숨바꼭질
+        play/MemoryGameActivity.java   기억·이야기 놀이 화면 (5문제, 오프라인, 로봇 이동 없음, temi 연결 시 음성 안내)
+        play/MemoryGame.java, OfflineMemoryPlanner.java, PlaySupportCoach.java   게임 규칙 (Android 없음 → verification/에서 테스트)
         game/HideAndSeekGame.java      숨바꼭질 상태 머신 (Android UI 없음 → verification/에서 테스트)
         game/HideAndSeekActivity.java  숨바꼭질 화면 (layout/activity_hide_and_seek.xml)
         robot/RobotController.java     로봇 제어 인터페이스 (팀 공통)
@@ -91,6 +94,7 @@ Android/                         ← git 저장소 루트 (C:\Users\hamse\TemiPr
       res/raw/isrg_root_x1.pem   Let's Encrypt ISRG Root X1 (SHA-256 지문은 파일 머리·TrustedHttp에)
       keepRules/rules.keep       R8 keep 규칙 (AGP 9 방식, 기존 proguard-rules.pro 역할)
       res/layout/activity_main.xml   상태 텍스트 + 기능 버튼 + dev_container(빌드별 영역)
+      res/drawable-nodpi/pic_*.png   기억 놀이 그림 17개
     src/temi/                    ← temi 빌드에만
       java/.../FlavorModule.java       createRobot → TemiRobotController, attachDevTools → 없음
       java/.../robot/TemiRobotController.java   temi SDK 구현
@@ -101,7 +105,7 @@ Android/                         ← git 저장소 루트 (C:\Users\hamse\TemiPr
       java/.../dev/DevLog.java
       res/layout/dev_panel.xml, res/values/dev_styles.xml
   docs/HIDE_AND_SEEK_GUIDE.md    숨바꼭질 사용·안전 가이드 (전진), docs/HIDE_AND_SEEK_NOTES.md 변경 기록
-  verification/                  게임 로직 JVM 테스트 (Android stub). `bash verification/run.sh` (JBR의 javac 필요)
+  verification/                  JVM 테스트 (Android stub): 숨바꼭질, 명령 큐, 기억 놀이. `bash verification/run.sh` (JBR의 javac 필요)
   gradle/libs.versions.toml      모든 의존성 버전 (단일 출처)
   gradle/gradle-daemon-jvm.properties   Gradle JDK 25 툴체인
   CLAUDE.md

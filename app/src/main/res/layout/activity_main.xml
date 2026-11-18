@@ -32,6 +32,18 @@
         app:layout_constraintTop_toBottomOf="@id/status_text" />
 
     <Button
+        android:id="@+id/btn_games"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:minWidth="240dp"
+        android:text="@string/menu_games"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_hide_and_seek" />
+
+    <Button
         android:id="@+id/btn_connection_test"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -41,7 +53,7 @@
         android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_hide_and_seek" />
+        app:layout_constraintTop_toBottomOf="@id/btn_games" />
 
     <!-- 빌드별 영역: emulator 빌드는 개발 패널을 붙이고, temi 빌드는 비워 둔다 -->
     <FrameLayout

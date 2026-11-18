@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#F5F8FB">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="28dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="temi 즐거운 놀이"
+            android:textColor="#203B59"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:text="게임을 골라 주세요!"
+            android:textSize="20sp" />
+        <Button
+            android:id="@+id/menu_memory"
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:layout_marginTop="24dp"
+            android:contentDescription="기억·이야기 놀이 시작"
+            android:text="기억·이야기 놀이 · 5문제"
+            android:textAllCaps="false"
+            android:textSize="22sp" />
+        <Button
+            android:id="@+id/menu_hide"
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:layout_marginTop="14dp"
+            android:contentDescription="숨바꼭질 시작"
+            android:text="숨바꼭질 · temi 자동 순찰"
+            android:textAllCaps="false"
+            android:textSize="22sp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="4~7세를 위한 놀이예요. 연령 선택이나 인터넷 연결 없이 바로 시작할 수 있어요. 정답이나 힌트 사용에 따라 다음 문제의 그림 수가 조금씩 바뀝니다."
+            android:textSize="14sp" />
+    </LinearLayout>
+</ScrollView>
